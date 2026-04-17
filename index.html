@@ -12,6 +12,8 @@
       --muted:#6b7280;
       --border:#e5e7eb;
       --soft:#f9fafb;
+      --highlight:#dbeafe;
+      --highlight-border:#93c5fd;
     }
 
     *{box-sizing:border-box}
@@ -95,6 +97,13 @@
       background:#fff;
       color:var(--text);
       margin-bottom:8px;
+      transition:background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+
+    input.highlight{
+      background:var(--highlight);
+      border-color:var(--highlight-border);
+      box-shadow:0 0 0 3px rgba(147,197,253,0.25);
     }
 
     .quick-buttons{
@@ -104,7 +113,7 @@
       margin-top:4px;
     }
 
-    .quick-btn, .action-btn{
+    .quick-btn, .action-btn, .calc-btn{
       border:1px solid var(--border);
       background:#fff;
       color:var(--text);
@@ -114,8 +123,15 @@
       cursor:pointer;
     }
 
-    .quick-btn:hover, .action-btn:hover{
+    .quick-btn:hover, .action-btn:hover, .calc-btn:hover{
       background:#eef2f7;
+    }
+
+    .calc-btn{
+      margin-top:6px;
+      width:100%;
+      border-radius:10px;
+      font-weight:600;
     }
 
     .divider{
@@ -183,6 +199,8 @@
             <button type="button" class="quick-btn" data-km="21" data-m="97">Media maratón</button>
             <button type="button" class="quick-btn" data-km="42" data-m="195">Maratón</button>
           </div>
+
+          <button type="button" class="calc-btn" id="btnDistance">Calcular distancia</button>
         </div>
 
         <div class="block">
@@ -201,6 +219,8 @@
               <input type="number" id="timeSec" min="0" max="59" step="1" placeholder="Ej. 45">
             </div>
           </div>
+
+          <button type="button" class="calc-btn" id="btnTime">Calcular tiempo</button>
         </div>
       </div>
 
@@ -219,6 +239,8 @@
               <input type="number" id="paceSec" min="0" max="59" step="1" placeholder="Ej. 30">
             </div>
           </div>
+
+          <button type="button" class="calc-btn" id="btnPace">Calcular ritmo</button>
         </div>
 
         <div class="block">
@@ -227,30 +249,30 @@
             <label>Kilómetros por hora</label>
             <input type="number" id="speedKmh" min="0" step="0.01" placeholder="Ej. 12.50">
           </div>
+
+          <button type="button" class="calc-btn" id="btnSpeed">Calcular velocidad</button>
         </div>
       </div>
 
       <div class="actions">
-        <button type="button" class="action-btn" id="clearBtn">Limpiar</button>
+        <button type="button" class="action-btn" id="clearBtn">Limpiar aviso</button>
+        <button type="button" class="action-btn" id="clearAllBtn">Borrar todo</button>
       </div>
 
       <div class="divider"></div>
 
       <div class="kpi">
         <span>Estado</span>
-        <span id="resultText">Introduce exactamente dos variables completas para calcular las otras dos.</span>
+        <span id="resultText">Pulsa el botón del valor que quieras calcular.</span>
       </div>
 
       <div class="helper">
-        Variables disponibles: <strong>distancia</strong>, <strong>tiempo</strong>, <strong>ritmo</strong> y <strong>velocidad</strong>.
-        Introduce exactamente <strong>dos variables completas</strong> y la calculadora completará las otras dos.
+        Puedes calcular cualquier variable usando las demás. No hace falta limpiar antes: al pulsar un botón, ese valor se recalcula y se sobrescribe automáticamente.
       </div>
     </div>
   </div>
 
   <script>
-    let isUpdating = false;
-
     function val(id){
       const raw = document.getElementById(id).value;
       if (raw === "") return null;
@@ -264,6 +286,30 @@
 
     function clearVal(id){
       document.getElementById(id).value = "";
+    }
+
+    function setMessage(text){
+      document.getElementById("resultText").textContent = text;
+    }
+
+    function clearHighlights(){
+      document.querySelectorAll("input").forEach(input => {
+        input.classList.remove("highlight");
+      });
+    }
+
+    function highlightFields(ids){
+      clearHighlights();
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("highlight");
+      });
+      setTimeout(() => {
+        ids.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove("highlight");
+        });
+      }, 1600);
     }
 
     function getDistanceKm(){
@@ -280,17 +326,8 @@
       return kmPart + (mPart / 1000);
     }
 
-    function distanceIsComplete(){
-      const d = getDistanceKm();
-      return d !== null && d > 0;
-    }
-
     function setDistance(totalKm){
-      if (totalKm === null || !isFinite(totalKm) || totalKm <= 0){
-        clearVal("distanceKm");
-        clearVal("distanceM");
-        return;
-      }
+      if (totalKm === null || !isFinite(totalKm) || totalKm <= 0) return false;
 
       const totalMeters = Math.round(totalKm * 1000);
       const km = Math.floor(totalMeters / 1000);
@@ -298,6 +335,8 @@
 
       setVal("distanceKm", km);
       setVal("distanceM", m);
+      highlightFields(["distanceKm", "distanceM"]);
+      return true;
     }
 
     function getTimeHours(){
@@ -316,18 +355,8 @@
       return hh + (mm / 60) + (ss / 3600);
     }
 
-    function timeIsComplete(){
-      const t = getTimeHours();
-      return t !== null && t > 0;
-    }
-
     function setTime(hours){
-      if (hours === null || !isFinite(hours) || hours <= 0){
-        clearVal("timeH");
-        clearVal("timeMin");
-        clearVal("timeSec");
-        return;
-      }
+      if (hours === null || !isFinite(hours) || hours <= 0) return false;
 
       const totalSeconds = Math.round(hours * 3600);
       const h = Math.floor(totalSeconds / 3600);
@@ -337,6 +366,8 @@
       setVal("timeH", h);
       setVal("timeMin", m);
       setVal("timeSec", s);
+      highlightFields(["timeH", "timeMin", "timeSec"]);
+      return true;
     }
 
     function getPaceMinPerKm(){
@@ -353,17 +384,8 @@
       return mm + (ss / 60);
     }
 
-    function paceIsComplete(){
-      const p = getPaceMinPerKm();
-      return p !== null && p > 0;
-    }
-
     function setPace(minPerKm){
-      if (minPerKm === null || !isFinite(minPerKm) || minPerKm <= 0){
-        clearVal("paceMin");
-        clearVal("paceSec");
-        return;
-      }
+      if (minPerKm === null || !isFinite(minPerKm) || minPerKm <= 0) return false;
 
       const totalSeconds = Math.round(minPerKm * 60);
       const m = Math.floor(totalSeconds / 60);
@@ -371,134 +393,149 @@
 
       setVal("paceMin", m);
       setVal("paceSec", s);
+      highlightFields(["paceMin", "paceSec"]);
+      return true;
     }
 
     function getSpeedKmh(){
       const v = val("speedKmh");
-      if (v === null) return null;
-      return v > 0 ? v : null;
-    }
-
-    function speedIsComplete(){
-      const v = getSpeedKmh();
-      return v !== null && v > 0;
+      if (v === null || v <= 0) return null;
+      return v;
     }
 
     function setSpeed(kmh){
-      if (kmh === null || !isFinite(kmh) || kmh <= 0){
-        clearVal("speedKmh");
-        return;
-      }
+      if (kmh === null || !isFinite(kmh) || kmh <= 0) return false;
       setVal("speedKmh", kmh.toFixed(2));
+      highlightFields(["speedKmh"]);
+      return true;
     }
 
-    function updateCalculator(){
-      if (isUpdating) return;
-      isUpdating = true;
+    function calculateDistance(){
+      const time = getTimeHours();
+      const pace = getPaceMinPerKm();
+      const speed = getSpeedKmh();
 
-      const hasDistance = distanceIsComplete();
-      const hasTime = timeIsComplete();
-      const hasPace = paceIsComplete();
-      const hasSpeed = speedIsComplete();
+      if (time !== null && pace !== null){
+        const distance = (time * 60) / pace;
+        if (setDistance(distance)){
+          setMessage("Distancia calculada a partir del tiempo y el ritmo.");
+          return;
+        }
+      }
 
-      const count = [hasDistance, hasTime, hasPace, hasSpeed].filter(Boolean).length;
+      if (time !== null && speed !== null){
+        const distance = time * speed;
+        if (setDistance(distance)){
+          setMessage("Distancia calculada a partir del tiempo y la velocidad.");
+          return;
+        }
+      }
 
+      if (pace !== null && speed !== null){
+        setMessage("Ritmo y velocidad representan prácticamente la misma variable. Para calcular la distancia necesitas además el tiempo.");
+        return;
+      }
+
+      setMessage("No hay datos suficientes para calcular la distancia.");
+    }
+
+    function calculateTime(){
       const distance = getDistanceKm();
-      const timeHours = getTimeHours();
-      const paceMinKm = getPaceMinPerKm();
-      const speedKmh = getSpeedKmh();
+      const pace = getPaceMinPerKm();
+      const speed = getSpeedKmh();
 
-      const resultText = document.getElementById("resultText");
+      if (distance !== null && pace !== null){
+        const time = (distance * pace) / 60;
+        if (setTime(time)){
+          setMessage("Tiempo calculado a partir de la distancia y el ritmo.");
+          return;
+        }
+      }
 
-      if (count < 2){
-        resultText.textContent = "Introduce exactamente dos variables completas para calcular las otras dos.";
-        isUpdating = false;
+      if (distance !== null && speed !== null){
+        const time = distance / speed;
+        if (setTime(time)){
+          setMessage("Tiempo calculado a partir de la distancia y la velocidad.");
+          return;
+        }
+      }
+
+      if (pace !== null && speed !== null){
+        setMessage("Ritmo y velocidad representan prácticamente la misma variable. Para calcular el tiempo necesitas además la distancia.");
         return;
       }
 
-      if (count > 2){
-        resultText.textContent = "Hay más de dos variables introducidas. Deja solo dos completas para evitar conflictos.";
-        isUpdating = false;
-        return;
-      }
-
-      // DISTANCIA + TIEMPO
-      if (hasDistance && hasTime){
-        const pace = (timeHours * 60) / distance;
-        const speed = distance / timeHours;
-        setPace(pace);
-        setSpeed(speed);
-        resultText.textContent = "Ritmo y velocidad calculados a partir de la distancia y el tiempo.";
-        isUpdating = false;
-        return;
-      }
-
-      // DISTANCIA + RITMO
-      if (hasDistance && hasPace){
-        const time = (distance * paceMinKm) / 60;
-        const speed = 60 / paceMinKm;
-        setTime(time);
-        setSpeed(speed);
-        resultText.textContent = "Tiempo y velocidad calculados a partir de la distancia y el ritmo.";
-        isUpdating = false;
-        return;
-      }
-
-      // DISTANCIA + VELOCIDAD
-      if (hasDistance && hasSpeed){
-        const time = distance / speedKmh;
-        const pace = 60 / speedKmh;
-        setTime(time);
-        setPace(pace);
-        resultText.textContent = "Tiempo y ritmo calculados a partir de la distancia y la velocidad.";
-        isUpdating = false;
-        return;
-      }
-
-      // TIEMPO + RITMO
-      if (hasTime && hasPace){
-        const distanceCalc = (timeHours * 60) / paceMinKm;
-        const speed = 60 / paceMinKm;
-        setDistance(distanceCalc);
-        setSpeed(speed);
-        resultText.textContent = "Distancia y velocidad calculadas a partir del tiempo y el ritmo.";
-        isUpdating = false;
-        return;
-      }
-
-      // TIEMPO + VELOCIDAD
-      if (hasTime && hasSpeed){
-        const distanceCalc = timeHours * speedKmh;
-        const pace = 60 / speedKmh;
-        setDistance(distanceCalc);
-        setPace(pace);
-        resultText.textContent = "Distancia y ritmo calculados a partir del tiempo y la velocidad.";
-        isUpdating = false;
-        return;
-      }
-
-      // RITMO + VELOCIDAD
-      if (hasPace && hasSpeed){
-        resultText.textContent = "Ritmo y velocidad expresan casi la misma variable. Usa una de las dos junto con distancia o tiempo.";
-        isUpdating = false;
-        return;
-      }
-
-      resultText.textContent = "No se ha podido realizar el cálculo.";
-      isUpdating = false;
+      setMessage("No hay datos suficientes para calcular el tiempo.");
     }
 
-    document.addEventListener("input", updateCalculator);
+    function calculatePace(){
+      const distance = getDistanceKm();
+      const time = getTimeHours();
+      const speed = getSpeedKmh();
+
+      if (distance !== null && time !== null){
+        const pace = (time * 60) / distance;
+        if (setPace(pace)){
+          setMessage("Ritmo calculado a partir de la distancia y el tiempo.");
+          return;
+        }
+      }
+
+      if (speed !== null){
+        const pace = 60 / speed;
+        if (setPace(pace)){
+          setMessage("Ritmo calculado a partir de la velocidad.");
+          return;
+        }
+      }
+
+      setMessage("No hay datos suficientes para calcular el ritmo.");
+    }
+
+    function calculateSpeed(){
+      const distance = getDistanceKm();
+      const time = getTimeHours();
+      const pace = getPaceMinPerKm();
+
+      if (distance !== null && time !== null){
+        const speed = distance / time;
+        if (setSpeed(speed)){
+          setMessage("Velocidad calculada a partir de la distancia y el tiempo.");
+          return;
+        }
+      }
+
+      if (pace !== null){
+        const speed = 60 / pace;
+        if (setSpeed(speed)){
+          setMessage("Velocidad calculada a partir del ritmo.");
+          return;
+        }
+      }
+
+      setMessage("No hay datos suficientes para calcular la velocidad.");
+    }
 
     document.querySelectorAll(".quick-btn").forEach(btn => {
       btn.addEventListener("click", function(){
         setVal("distanceKm", this.dataset.km);
         setVal("distanceM", this.dataset.m);
-        updateCalculator();
+        highlightFields(["distanceKm", "distanceM"]);
+        setMessage("Distancia actualizada. Pulsa el botón del valor que quieras calcular.");
       });
     });
 
+    document.getElementById("btnDistance").addEventListener("click", calculateDistance);
+    document.getElementById("btnTime").addEventListener("click", calculateTime);
+    document.getElementById("btnPace").addEventListener("click", calculatePace);
+    document.getElementById("btnSpeed").addEventListener("click", calculateSpeed);
+
     document.getElementById("clearBtn").addEventListener("click", function(){
+      clearHighlights();
+      setMessage("Pulsa el botón del valor que quieras calcular.");
+    });
+
+    document.getElementById("clearAllBtn").addEventListener("click", function(){
       clearVal("distanceKm");
       clearVal("distanceM");
       clearVal("timeH");
@@ -507,10 +544,9 @@
       clearVal("paceMin");
       clearVal("paceSec");
       clearVal("speedKmh");
-      updateCalculator();
+      clearHighlights();
+      setMessage("Todos los campos se han borrado.");
     });
-
-    updateCalculator();
   </script>
 </body>
 </html>
