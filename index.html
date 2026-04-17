@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calculadora de distancia, tiempo, ritmo y velocidad</title>
+  <title>Calculadora de distancia, tiempo y ritmo</title>
   <style>
     :root{
       --bg:#f5f7fa;
@@ -26,7 +26,7 @@
     }
 
     .wrap{
-      max-width:980px;
+      max-width:1180px;
       margin:20px auto;
       padding:10px;
     }
@@ -48,55 +48,63 @@
       font-size:1rem;
     }
 
-    .grid{
+    .grid-3{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+      align-items:start;
     }
 
-    .subgrid{
+    .subgrid-2{
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:10px;
+      gap:8px;
     }
 
     .subgrid-3{
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
-      gap:10px;
+      gap:8px;
     }
 
-    @media (max-width: 800px){
-      .grid{grid-template-columns:1fr;}
+    @media (max-width: 980px){
+      .grid-3{grid-template-columns:1fr;}
     }
 
     @media (max-width: 560px){
-      .subgrid, .subgrid-3{grid-template-columns:1fr;}
+      .subgrid-2,.subgrid-3{grid-template-columns:1fr;}
     }
 
     .block{
       background:var(--soft);
       border:1px solid var(--border);
       border-radius:12px;
-      padding:14px;
+      padding:12px;
     }
 
     label{
       display:block;
-      font-size:0.84rem;
+      font-size:0.82rem;
       color:var(--muted);
       margin-bottom:4px;
     }
 
+    .block-title{
+      font-size:0.9rem;
+      font-weight:600;
+      margin-bottom:8px;
+      color:var(--text);
+    }
+
     input{
       width:100%;
-      padding:10px;
+      padding:8px 9px;
       border:1px solid var(--border);
       border-radius:8px;
-      font-size:0.95rem;
+      font-size:0.92rem;
       background:#fff;
       color:var(--text);
-      margin-bottom:8px;
+      margin-bottom:6px;
       transition:background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
     }
 
@@ -109,8 +117,9 @@
     .quick-buttons{
       display:flex;
       flex-wrap:wrap;
-      gap:8px;
+      gap:6px;
       margin-top:4px;
+      margin-bottom:8px;
     }
 
     .quick-btn, .action-btn, .calc-btn{
@@ -118,8 +127,8 @@
       background:#fff;
       color:var(--text);
       border-radius:999px;
-      padding:8px 12px;
-      font-size:0.88rem;
+      padding:7px 10px;
+      font-size:0.84rem;
       cursor:pointer;
     }
 
@@ -128,7 +137,7 @@
     }
 
     .calc-btn{
-      margin-top:6px;
+      margin-top:4px;
       width:100%;
       border-radius:10px;
       font-weight:600;
@@ -145,7 +154,7 @@
       justify-content:space-between;
       gap:14px;
       margin:10px 0;
-      font-size:0.98rem;
+      font-size:0.95rem;
     }
 
     .kpi span:last-child{
@@ -176,27 +185,28 @@
   <div class="wrap">
     <div class="card">
       <div class="section-title">
-        <h2>Calculadora de distancia, tiempo, ritmo y velocidad</h2>
+        <h2>Calculadora de distancia, tiempo y ritmo</h2>
       </div>
 
-      <div class="grid">
+      <div class="grid-3">
         <div class="block">
-          <label>Distancia</label>
-          <div class="subgrid">
+          <div class="block-title">Distancia</div>
+
+          <div class="subgrid-2">
             <div>
               <label>Kilómetros</label>
-              <input type="number" id="distanceKm" min="0" step="1" placeholder="Ej. 10">
+              <input type="number" id="distanceKm" min="0" step="1">
             </div>
             <div>
               <label>Metros</label>
-              <input type="number" id="distanceM" min="0" max="999" step="1" placeholder="Ej. 500">
+              <input type="number" id="distanceM" min="0" max="999" step="1">
             </div>
           </div>
 
           <div class="quick-buttons">
             <button type="button" class="quick-btn" data-km="5" data-m="0">5 km</button>
             <button type="button" class="quick-btn" data-km="10" data-m="0">10 km</button>
-            <button type="button" class="quick-btn" data-km="21" data-m="97">Media maratón</button>
+            <button type="button" class="quick-btn" data-km="21" data-m="97">Media</button>
             <button type="button" class="quick-btn" data-km="42" data-m="195">Maratón</button>
           </div>
 
@@ -204,58 +214,45 @@
         </div>
 
         <div class="block">
-          <label>Tiempo</label>
+          <div class="block-title">Tiempo</div>
+
           <div class="subgrid-3">
             <div>
               <label>Horas</label>
-              <input type="number" id="timeH" min="0" step="1" placeholder="Ej. 1">
+              <input type="number" id="timeH" min="0" step="1">
             </div>
             <div>
               <label>Minutos</label>
-              <input type="number" id="timeMin" min="0" max="59" step="1" placeholder="Ej. 30">
+              <input type="number" id="timeMin" min="0" max="59" step="1">
             </div>
             <div>
               <label>Segundos</label>
-              <input type="number" id="timeSec" min="0" max="59" step="1" placeholder="Ej. 45">
+              <input type="number" id="timeSec" min="0" max="59" step="1">
             </div>
           </div>
 
           <button type="button" class="calc-btn" id="btnTime">Calcular tiempo</button>
         </div>
-      </div>
 
-      <div class="divider"></div>
-
-      <div class="grid">
         <div class="block">
-          <label>Ritmo</label>
-          <div class="subgrid">
+          <div class="block-title">Ritmo</div>
+
+          <div class="subgrid-2">
             <div>
-              <label>Minutos por km</label>
-              <input type="number" id="paceMin" min="0" step="1" placeholder="Ej. 4">
+              <label>Min/km</label>
+              <input type="number" id="paceMin" min="0" step="1">
             </div>
             <div>
-              <label>Segundos por km</label>
-              <input type="number" id="paceSec" min="0" max="59" step="1" placeholder="Ej. 30">
+              <label>Seg/km</label>
+              <input type="number" id="paceSec" min="0" max="59" step="1">
             </div>
           </div>
 
           <button type="button" class="calc-btn" id="btnPace">Calcular ritmo</button>
         </div>
-
-        <div class="block">
-          <label>Velocidad</label>
-          <div>
-            <label>Kilómetros por hora</label>
-            <input type="number" id="speedKmh" min="0" step="0.01" placeholder="Ej. 12.50">
-          </div>
-
-          <button type="button" class="calc-btn" id="btnSpeed">Calcular velocidad</button>
-        </div>
       </div>
 
       <div class="actions">
-        <button type="button" class="action-btn" id="clearBtn">Limpiar aviso</button>
         <button type="button" class="action-btn" id="clearAllBtn">Borrar todo</button>
       </div>
 
@@ -267,7 +264,7 @@
       </div>
 
       <div class="helper">
-        Puedes calcular cualquier variable usando las demás. No hace falta limpiar antes: al pulsar un botón, ese valor se recalcula y se sobrescribe automáticamente.
+        Introduce dos variables y pulsa el botón del parámetro que quieras recalcular. El valor calculado se sobrescribe directamente.
       </div>
     </div>
   </div>
@@ -397,23 +394,9 @@
       return true;
     }
 
-    function getSpeedKmh(){
-      const v = val("speedKmh");
-      if (v === null || v <= 0) return null;
-      return v;
-    }
-
-    function setSpeed(kmh){
-      if (kmh === null || !isFinite(kmh) || kmh <= 0) return false;
-      setVal("speedKmh", kmh.toFixed(2));
-      highlightFields(["speedKmh"]);
-      return true;
-    }
-
     function calculateDistance(){
       const time = getTimeHours();
       const pace = getPaceMinPerKm();
-      const speed = getSpeedKmh();
 
       if (time !== null && pace !== null){
         const distance = (time * 60) / pace;
@@ -423,26 +406,12 @@
         }
       }
 
-      if (time !== null && speed !== null){
-        const distance = time * speed;
-        if (setDistance(distance)){
-          setMessage("Distancia calculada a partir del tiempo y la velocidad.");
-          return;
-        }
-      }
-
-      if (pace !== null && speed !== null){
-        setMessage("Ritmo y velocidad representan prácticamente la misma variable. Para calcular la distancia necesitas además el tiempo.");
-        return;
-      }
-
-      setMessage("No hay datos suficientes para calcular la distancia.");
+      setMessage("Necesitas introducir tiempo y ritmo para calcular la distancia.");
     }
 
     function calculateTime(){
       const distance = getDistanceKm();
       const pace = getPaceMinPerKm();
-      const speed = getSpeedKmh();
 
       if (distance !== null && pace !== null){
         const time = (distance * pace) / 60;
@@ -452,26 +421,12 @@
         }
       }
 
-      if (distance !== null && speed !== null){
-        const time = distance / speed;
-        if (setTime(time)){
-          setMessage("Tiempo calculado a partir de la distancia y la velocidad.");
-          return;
-        }
-      }
-
-      if (pace !== null && speed !== null){
-        setMessage("Ritmo y velocidad representan prácticamente la misma variable. Para calcular el tiempo necesitas además la distancia.");
-        return;
-      }
-
-      setMessage("No hay datos suficientes para calcular el tiempo.");
+      setMessage("Necesitas introducir distancia y ritmo para calcular el tiempo.");
     }
 
     function calculatePace(){
       const distance = getDistanceKm();
       const time = getTimeHours();
-      const speed = getSpeedKmh();
 
       if (distance !== null && time !== null){
         const pace = (time * 60) / distance;
@@ -481,39 +436,7 @@
         }
       }
 
-      if (speed !== null){
-        const pace = 60 / speed;
-        if (setPace(pace)){
-          setMessage("Ritmo calculado a partir de la velocidad.");
-          return;
-        }
-      }
-
-      setMessage("No hay datos suficientes para calcular el ritmo.");
-    }
-
-    function calculateSpeed(){
-      const distance = getDistanceKm();
-      const time = getTimeHours();
-      const pace = getPaceMinPerKm();
-
-      if (distance !== null && time !== null){
-        const speed = distance / time;
-        if (setSpeed(speed)){
-          setMessage("Velocidad calculada a partir de la distancia y el tiempo.");
-          return;
-        }
-      }
-
-      if (pace !== null){
-        const speed = 60 / pace;
-        if (setSpeed(speed)){
-          setMessage("Velocidad calculada a partir del ritmo.");
-          return;
-        }
-      }
-
-      setMessage("No hay datos suficientes para calcular la velocidad.");
+      setMessage("Necesitas introducir distancia y tiempo para calcular el ritmo.");
     }
 
     document.querySelectorAll(".quick-btn").forEach(btn => {
@@ -528,12 +451,6 @@
     document.getElementById("btnDistance").addEventListener("click", calculateDistance);
     document.getElementById("btnTime").addEventListener("click", calculateTime);
     document.getElementById("btnPace").addEventListener("click", calculatePace);
-    document.getElementById("btnSpeed").addEventListener("click", calculateSpeed);
-
-    document.getElementById("clearBtn").addEventListener("click", function(){
-      clearHighlights();
-      setMessage("Pulsa el botón del valor que quieras calcular.");
-    });
 
     document.getElementById("clearAllBtn").addEventListener("click", function(){
       clearVal("distanceKm");
@@ -543,7 +460,6 @@
       clearVal("timeSec");
       clearVal("paceMin");
       clearVal("paceSec");
-      clearVal("speedKmh");
       clearHighlights();
       setMessage("Todos los campos se han borrado.");
     });
