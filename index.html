@@ -14,6 +14,9 @@
       --soft:#f9fafb;
       --highlight:#dbeafe;
       --highlight-border:#93c5fd;
+      --stale-bg:#fee2e2;
+      --stale-border:#fca5a5;
+      --stale-text:#991b1b;
     }
 
     *{box-sizing:border-box}
@@ -67,8 +70,18 @@
       gap:8px;
     }
 
+    .calc-row{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+
     @media (max-width: 980px){
-      .grid-3{grid-template-columns:1fr;}
+      .grid-3,
+      .calc-row{
+        grid-template-columns:1fr;
+      }
     }
 
     @media (max-width: 560px){
@@ -105,13 +118,20 @@
       background:#fff;
       color:var(--text);
       margin-bottom:6px;
-      transition:background-color .25s ease, border-color .25s ease, box-shadow .25s ease;
+      transition:background-color .25s ease, border-color .25s ease, box-shadow .25s ease, color .25s ease;
     }
 
     input.highlight{
       background:var(--highlight);
       border-color:var(--highlight-border);
       box-shadow:0 0 0 3px rgba(147,197,253,0.25);
+    }
+
+    input.stale{
+      background:var(--stale-bg);
+      border-color:var(--stale-border);
+      color:var(--stale-text);
+      box-shadow:0 0 0 3px rgba(252,165,165,0.20);
     }
 
     .quick-buttons{
@@ -137,7 +157,6 @@
     }
 
     .calc-btn{
-      margin-top:4px;
       width:100%;
       border-radius:10px;
       font-weight:600;
@@ -209,8 +228,6 @@
             <button type="button" class="quick-btn" data-km="21" data-m="97">Media</button>
             <button type="button" class="quick-btn" data-km="42" data-m="195">Maratón</button>
           </div>
-
-          <button type="button" class="calc-btn" id="btnDistance">Calcular distancia</button>
         </div>
 
         <div class="block">
@@ -230,8 +247,6 @@
               <input type="number" id="timeSec" min="0" max="59" step="1">
             </div>
           </div>
-
-          <button type="button" class="calc-btn" id="btnTime">Calcular tiempo</button>
         </div>
 
         <div class="block">
@@ -247,9 +262,13 @@
               <input type="number" id="paceSec" min="0" max="59" step="1">
             </div>
           </div>
-
-          <button type="button" class="calc-btn" id="btnPace">Calcular ritmo</button>
         </div>
+      </div>
+
+      <div class="calc-row">
+        <button type="button" class="calc-btn" id="btnDistance">Calcular distancia</button>
+        <button type="button" class="calc-btn" id="btnTime">Calcular tiempo</button>
+        <button type="button" class="calc-btn" id="btnPace">Calcular ritmo</button>
       </div>
 
       <div class="actions">
@@ -264,12 +283,18 @@
       </div>
 
       <div class="helper">
-        Introduce dos variables y pulsa el botón del parámetro que quieras recalcular. El valor calculado se sobrescribe directamente.
+        Introduce dos variables y pulsa el botón del parámetro que quieras recalcular. Si cambias datos después de calcular, el bloque desactualizado se marcará en rojo hasta que recalcules.
       </div>
     </div>
   </div>
 
   <script>
+    let lastCalculated = null;
+
+    const DISTANCE_FIELDS = ["distanceKm", "distanceM"];
+    const TIME_FIELDS = ["timeH", "timeMin", "timeSec"];
+    const PACE_FIELDS = ["paceMin", "paceSec"];
+
     function val(id){
       const raw = document.getElementById(id).value;
       if (raw === "") return null;
@@ -292,6 +317,19 @@
     function clearHighlights(){
       document.querySelectorAll("input").forEach(input => {
         input.classList.remove("highlight");
+      });
+    }
+
+    function clearStaleMarks(){
+      document.querySelectorAll("input").forEach(input => {
+        input.classList.remove("stale");
+      });
+    }
+
+    function markFieldsStale(ids){
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add("stale");
       });
     }
 
@@ -332,7 +370,9 @@
 
       setVal("distanceKm", km);
       setVal("distanceM", m);
-      highlightFields(["distanceKm", "distanceM"]);
+      clearStaleMarks();
+      highlightFields(DISTANCE_FIELDS);
+      lastCalculated = "distance";
       return true;
     }
 
@@ -363,7 +403,9 @@
       setVal("timeH", h);
       setVal("timeMin", m);
       setVal("timeSec", s);
-      highlightFields(["timeH", "timeMin", "timeSec"]);
+      clearStaleMarks();
+      highlightFields(TIME_FIELDS);
+      lastCalculated = "time";
       return true;
     }
 
@@ -390,8 +432,43 @@
 
       setVal("paceMin", m);
       setVal("paceSec", s);
-      highlightFields(["paceMin", "paceSec"]);
+      clearStaleMarks();
+      highlightFields(PACE_FIELDS);
+      lastCalculated = "pace";
       return true;
+    }
+
+    function haveEnoughForConsistencyCheck(){
+      return getDistanceKm() !== null && getTimeHours() !== null && getPaceMinPerKm() !== null;
+    }
+
+    function isConsistent(){
+      const distance = getDistanceKm();
+      const time = getTimeHours();
+      const pace = getPaceMinPerKm();
+
+      if (distance === null || time === null || pace === null || distance <= 0 || time <= 0 || pace <= 0){
+        return true;
+      }
+
+      const expectedPace = (time * 60) / distance;
+      return Math.abs(expectedPace - pace) < 0.01;
+    }
+
+    function refreshStaleState(){
+      clearStaleMarks();
+
+      if (!lastCalculated) return;
+      if (!haveEnoughForConsistencyCheck()) return;
+      if (isConsistent()) return;
+
+      if (lastCalculated === "distance"){
+        markFieldsStale(DISTANCE_FIELDS);
+      } else if (lastCalculated === "time"){
+        markFieldsStale(TIME_FIELDS);
+      } else if (lastCalculated === "pace"){
+        markFieldsStale(PACE_FIELDS);
+      }
     }
 
     function calculateDistance(){
@@ -439,13 +516,22 @@
       setMessage("Necesitas introducir distancia y tiempo para calcular el ritmo.");
     }
 
+    function handleUserEdit(){
+      refreshStaleState();
+    }
+
     document.querySelectorAll(".quick-btn").forEach(btn => {
       btn.addEventListener("click", function(){
         setVal("distanceKm", this.dataset.km);
         setVal("distanceM", this.dataset.m);
-        highlightFields(["distanceKm", "distanceM"]);
+        handleUserEdit();
+        highlightFields(DISTANCE_FIELDS);
         setMessage("Distancia actualizada. Pulsa el botón del valor que quieras calcular.");
       });
+    });
+
+    document.querySelectorAll("input").forEach(input => {
+      input.addEventListener("input", handleUserEdit);
     });
 
     document.getElementById("btnDistance").addEventListener("click", calculateDistance);
@@ -461,6 +547,8 @@
       clearVal("paceMin");
       clearVal("paceSec");
       clearHighlights();
+      clearStaleMarks();
+      lastCalculated = null;
       setMessage("Todos los campos se han borrado.");
     });
   </script>
