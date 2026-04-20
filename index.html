@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Calculadora de distancia, tiempo y ritmo</title>
+
   <style>
     :root{
       --bg:#f5f7fa;
@@ -12,8 +13,12 @@
       --muted:#6b7280;
       --border:#e5e7eb;
       --soft:#f9fafb;
+
       --highlight:#dbeafe;
       --highlight-border:#93c5fd;
+
+      --success:#dcfce7;
+      --success-border:#86efac;
     }
 
     *{box-sizing:border-box}
@@ -26,7 +31,7 @@
     }
 
     .wrap{
-      max-width:1180px;
+      max-width:1100px;
       margin:20px auto;
       padding:10px;
     }
@@ -39,12 +44,8 @@
       box-shadow:0 4px 14px rgba(15,23,42,0.04);
     }
 
-    .section-title{
-      margin-bottom:14px;
-    }
-
-    .section-title h2{
-      margin:0;
+    h2{
+      margin:0 0 12px 0;
       font-size:1rem;
     }
 
@@ -54,18 +55,6 @@
       gap:12px;
     }
 
-    .subgrid-2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-    }
-
-    .subgrid-3{
-      display:grid;
-      grid-template-columns:1fr 1fr 1fr;
-      gap:8px;
-    }
-
     .calc-row{
       display:grid;
       grid-template-columns:1fr 1fr 1fr;
@@ -73,15 +62,8 @@
       margin-top:12px;
     }
 
-    @media (max-width: 980px){
-      .grid-3,
-      .calc-row{
-        grid-template-columns:1fr;
-      }
-    }
-
-    @media (max-width: 560px){
-      .subgrid-2,.subgrid-3{grid-template-columns:1fr;}
+    @media (max-width: 900px){
+      .grid-3, .calc-row{grid-template-columns:1fr;}
     }
 
     .block{
@@ -97,11 +79,6 @@
       margin-bottom:8px;
     }
 
-    label{
-      font-size:0.82rem;
-      color:var(--muted);
-    }
-
     input{
       width:100%;
       padding:8px;
@@ -115,6 +92,12 @@
       background:var(--highlight);
       border-color:var(--highlight-border);
       box-shadow:0 0 0 3px rgba(147,197,253,0.25);
+    }
+
+    input.success{
+      background:var(--success);
+      border-color:var(--success-border);
+      box-shadow:0 0 0 3px rgba(134,239,172,0.25);
     }
 
     .quick-buttons{
@@ -147,9 +130,9 @@
       margin-top:12px;
     }
 
-    .kpi{
-      margin-top:14px;
-      font-size:0.95rem;
+    .status{
+      margin-top:12px;
+      font-size:0.9rem;
     }
   </style>
 </head>
@@ -166,10 +149,8 @@
 <div class="block">
 <div class="block-title">Distancia</div>
 
-<div class="subgrid-2">
-<input id="distanceKm" type="number" placeholder="km">
-<input id="distanceM" type="number" placeholder="m">
-</div>
+<input id="distanceKm" type="number">
+<input id="distanceM" type="number">
 
 <div class="quick-buttons">
 <button data-km="5" data-m="0">5 km</button>
@@ -177,30 +158,23 @@
 <button data-km="21" data-m="97">Media</button>
 <button data-km="42" data-m="195">Maratón</button>
 </div>
-
 </div>
 
 <!-- TIEMPO -->
 <div class="block">
 <div class="block-title">Tiempo</div>
 
-<div class="subgrid-3">
-<input id="timeH" type="number" placeholder="h">
-<input id="timeMin" type="number" placeholder="min">
-<input id="timeSec" type="number" placeholder="s">
-</div>
-
+<input id="timeH" type="number">
+<input id="timeMin" type="number">
+<input id="timeSec" type="number">
 </div>
 
 <!-- RITMO -->
 <div class="block">
 <div class="block-title">Ritmo</div>
 
-<div class="subgrid-2">
-<input id="paceMin" type="number" placeholder="min/km">
-<input id="paceSec" type="number" placeholder="seg/km">
-</div>
-
+<input id="paceMin" type="number">
+<input id="paceSec" type="number">
 </div>
 
 </div>
@@ -216,7 +190,7 @@
 <button id="clearAll">Borrar todo</button>
 </div>
 
-<div class="kpi" id="status">Pulsa un botón para calcular</div>
+<div class="status" id="status">Pulsa un botón para calcular</div>
 
 </div>
 </div>
@@ -224,7 +198,7 @@
 <script>
 
 function v(id){
-  const x = document.getElementById(id).value;
+  const x=document.getElementById(id).value;
   return x===""?null:parseFloat(x);
 }
 
@@ -236,7 +210,15 @@ function highlight(ids){
   ids.forEach(id=>{
     let el=document.getElementById(id);
     el.classList.add("highlight");
-    setTimeout(()=>el.classList.remove("highlight"),1200);
+    setTimeout(()=>el.classList.remove("highlight"),1000);
+  });
+}
+
+function success(ids){
+  ids.forEach(id=>{
+    let el=document.getElementById(id);
+    el.classList.add("success");
+    setTimeout(()=>el.classList.remove("success"),1200);
   });
 }
 
@@ -266,7 +248,7 @@ function setDistance(d){
   let total=Math.round(d*1000);
   set("distanceKm",Math.floor(total/1000));
   set("distanceM",total%1000);
-  highlight(["distanceKm","distanceM"]);
+  success(["distanceKm","distanceM"]);
 }
 
 function setTime(t){
@@ -274,14 +256,14 @@ function setTime(t){
   set("timeH",Math.floor(sec/3600));
   set("timeMin",Math.floor((sec%3600)/60));
   set("timeSec",sec%60);
-  highlight(["timeH","timeMin","timeSec"]);
+  success(["timeH","timeMin","timeSec"]);
 }
 
 function setPace(p){
   let sec=Math.round(p*60);
   set("paceMin",Math.floor(sec/60));
   set("paceSec",sec%60);
-  highlight(["paceMin","paceSec"]);
+  success(["paceMin","paceSec"]);
 }
 
 function msg(t){
