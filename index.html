@@ -76,7 +76,30 @@
     .block-title{
       font-size:0.9rem;
       font-weight:600;
-      margin-bottom:8px;
+      margin-bottom:10px;
+    }
+
+    .field-label{
+      display:block;
+      font-size:0.82rem;
+      color:var(--muted);
+      margin:0 0 4px 0;
+    }
+
+    .subgrid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .subgrid-3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:8px;
+    }
+
+    @media (max-width: 560px){
+      .subgrid-2,.subgrid-3{grid-template-columns:1fr;}
     }
 
     input{
@@ -84,8 +107,10 @@
       padding:8px;
       border:1px solid var(--border);
       border-radius:8px;
-      margin-bottom:6px;
+      margin-bottom:8px;
       transition:.2s;
+      background:#fff;
+      color:var(--text);
     }
 
     input.highlight{
@@ -133,6 +158,7 @@
     .status{
       margin-top:12px;
       font-size:0.9rem;
+      color:var(--text);
     }
   </style>
 </head>
@@ -145,49 +171,75 @@
 
 <div class="grid-3">
 
-<!-- DISTANCIA -->
-<div class="block">
-<div class="block-title">Distancia</div>
+  <!-- DISTANCIA -->
+  <div class="block">
+    <div class="block-title">Distancia</div>
 
-<input id="distanceKm" type="number">
-<input id="distanceM" type="number">
+    <div class="subgrid-2">
+      <div>
+        <label class="field-label" for="distanceKm">Kilómetros</label>
+        <input id="distanceKm" type="number">
+      </div>
+      <div>
+        <label class="field-label" for="distanceM">Metros</label>
+        <input id="distanceM" type="number">
+      </div>
+    </div>
 
-<div class="quick-buttons">
-<button data-km="5" data-m="0">5 km</button>
-<button data-km="10" data-m="0">10 km</button>
-<button data-km="21" data-m="97">Media</button>
-<button data-km="42" data-m="195">Maratón</button>
+    <div class="quick-buttons">
+      <button data-km="5" data-m="0">5 km</button>
+      <button data-km="10" data-m="0">10 km</button>
+      <button data-km="21" data-m="97">Media</button>
+      <button data-km="42" data-m="195">Maratón</button>
+    </div>
+  </div>
+
+  <!-- TIEMPO -->
+  <div class="block">
+    <div class="block-title">Tiempo</div>
+
+    <div class="subgrid-3">
+      <div>
+        <label class="field-label" for="timeH">Horas</label>
+        <input id="timeH" type="number">
+      </div>
+      <div>
+        <label class="field-label" for="timeMin">Minutos</label>
+        <input id="timeMin" type="number">
+      </div>
+      <div>
+        <label class="field-label" for="timeSec">Segundos</label>
+        <input id="timeSec" type="number">
+      </div>
+    </div>
+  </div>
+
+  <!-- RITMO -->
+  <div class="block">
+    <div class="block-title">Ritmo</div>
+
+    <div class="subgrid-2">
+      <div>
+        <label class="field-label" for="paceMin">Minutos por km</label>
+        <input id="paceMin" type="number">
+      </div>
+      <div>
+        <label class="field-label" for="paceSec">Segundos por km</label>
+        <input id="paceSec" type="number">
+      </div>
+    </div>
+  </div>
+
 </div>
-</div>
 
-<!-- TIEMPO -->
-<div class="block">
-<div class="block-title">Tiempo</div>
-
-<input id="timeH" type="number">
-<input id="timeMin" type="number">
-<input id="timeSec" type="number">
-</div>
-
-<!-- RITMO -->
-<div class="block">
-<div class="block-title">Ritmo</div>
-
-<input id="paceMin" type="number">
-<input id="paceSec" type="number">
-</div>
-
-</div>
-
-<!-- BOTONES -->
 <div class="calc-row">
-<button class="calc-btn" id="btnDistance">Calcular distancia</button>
-<button class="calc-btn" id="btnTime">Calcular tiempo</button>
-<button class="calc-btn" id="btnPace">Calcular ritmo</button>
+  <button class="calc-btn" id="btnDistance">Calcular distancia</button>
+  <button class="calc-btn" id="btnTime">Calcular tiempo</button>
+  <button class="calc-btn" id="btnPace">Calcular ritmo</button>
 </div>
 
 <div class="actions">
-<button id="clearAll">Borrar todo</button>
+  <button id="clearAll">Borrar todo</button>
 </div>
 
 <div class="status" id="status">Pulsa un botón para calcular</div>
@@ -196,117 +248,152 @@
 </div>
 
 <script>
+let currentSuccessFields = [];
 
 function v(id){
-  const x=document.getElementById(id).value;
-  return x===""?null:parseFloat(x);
+  const x = document.getElementById(id).value;
+  return x === "" ? null : parseFloat(x);
 }
 
-function set(id,val){
-  document.getElementById(id).value=val;
+function set(id, val){
+  document.getElementById(id).value = val;
+}
+
+function clearAllSuccess(){
+  document.querySelectorAll("input").forEach(el => el.classList.remove("success"));
+  currentSuccessFields = [];
+}
+
+function clearAllHighlight(){
+  document.querySelectorAll("input").forEach(el => el.classList.remove("highlight"));
 }
 
 function highlight(ids){
-  ids.forEach(id=>{
-    let el=document.getElementById(id);
+  clearAllHighlight();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
     el.classList.add("highlight");
-    setTimeout(()=>el.classList.remove("highlight"),1000);
+    setTimeout(() => el.classList.remove("highlight"), 1000);
   });
 }
 
-function success(ids){
-  ids.forEach(id=>{
-    let el=document.getElementById(id);
+function setSuccess(ids){
+  clearAllSuccess();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
     el.classList.add("success");
-    setTimeout(()=>el.classList.remove("success"),1200);
   });
+  currentSuccessFields = [...ids];
+}
+
+function handleManualEdit(){
+  clearAllSuccess();
 }
 
 function distance(){
-  let km=v("distanceKm")||0;
-  let m=v("distanceM")||0;
-  if(km===0 && m===0) return null;
-  return km + m/1000;
+  const km = v("distanceKm") || 0;
+  const m = v("distanceM") || 0;
+  if (km === 0 && m === 0) return null;
+  return km + m / 1000;
 }
 
 function time(){
-  let h=v("timeH")||0;
-  let m=v("timeMin")||0;
-  let s=v("timeSec")||0;
-  if(h===0 && m===0 && s===0) return null;
-  return h + m/60 + s/3600;
+  const h = v("timeH") || 0;
+  const m = v("timeMin") || 0;
+  const s = v("timeSec") || 0;
+  if (h === 0 && m === 0 && s === 0) return null;
+  return h + m / 60 + s / 3600;
 }
 
 function pace(){
-  let m=v("paceMin")||0;
-  let s=v("paceSec")||0;
-  if(m===0 && s===0) return null;
-  return m + s/60;
+  const m = v("paceMin") || 0;
+  const s = v("paceSec") || 0;
+  if (m === 0 && s === 0) return null;
+  return m + s / 60;
 }
 
 function setDistance(d){
-  let total=Math.round(d*1000);
-  set("distanceKm",Math.floor(total/1000));
-  set("distanceM",total%1000);
-  success(["distanceKm","distanceM"]);
+  const total = Math.round(d * 1000);
+  set("distanceKm", Math.floor(total / 1000));
+  set("distanceM", total % 1000);
+  setSuccess(["distanceKm", "distanceM"]);
 }
 
 function setTime(t){
-  let sec=Math.round(t*3600);
-  set("timeH",Math.floor(sec/3600));
-  set("timeMin",Math.floor((sec%3600)/60));
-  set("timeSec",sec%60);
-  success(["timeH","timeMin","timeSec"]);
+  const sec = Math.round(t * 3600);
+  set("timeH", Math.floor(sec / 3600));
+  set("timeMin", Math.floor((sec % 3600) / 60));
+  set("timeSec", sec % 60);
+  setSuccess(["timeH", "timeMin", "timeSec"]);
 }
 
 function setPace(p){
-  let sec=Math.round(p*60);
-  set("paceMin",Math.floor(sec/60));
-  set("paceSec",sec%60);
-  success(["paceMin","paceSec"]);
+  const sec = Math.round(p * 60);
+  set("paceMin", Math.floor(sec / 60));
+  set("paceSec", sec % 60);
+  setSuccess(["paceMin", "paceSec"]);
 }
 
 function msg(t){
-  document.getElementById("status").innerText=t;
+  document.getElementById("status").innerText = t;
 }
 
-document.getElementById("btnDistance").onclick=()=>{
-  let t=time(), p=pace();
-  if(t && p){
-    setDistance((t*60)/p);
+document.getElementById("btnDistance").onclick = () => {
+  const t = time();
+  const p = pace();
+  if (t && p){
+    setDistance((t * 60) / p);
     msg("Distancia calculada");
+  } else {
+    msg("Introduce tiempo y ritmo para calcular la distancia");
   }
 };
 
-document.getElementById("btnTime").onclick=()=>{
-  let d=distance(), p=pace();
-  if(d && p){
-    setTime((d*p)/60);
+document.getElementById("btnTime").onclick = () => {
+  const d = distance();
+  const p = pace();
+  if (d && p){
+    setTime((d * p) / 60);
     msg("Tiempo calculado");
+  } else {
+    msg("Introduce distancia y ritmo para calcular el tiempo");
   }
 };
 
-document.getElementById("btnPace").onclick=()=>{
-  let d=distance(), t=time();
-  if(d && t){
-    setPace((t*60)/d);
+document.getElementById("btnPace").onclick = () => {
+  const d = distance();
+  const t = time();
+  if (d && t){
+    setPace((t * 60) / d);
     msg("Ritmo calculado");
+  } else {
+    msg("Introduce distancia y tiempo para calcular el ritmo");
   }
 };
 
-document.querySelectorAll(".quick-buttons button").forEach(b=>{
-  b.onclick=()=>{
-    set("distanceKm",b.dataset.km);
-    set("distanceM",b.dataset.m);
-    highlight(["distanceKm","distanceM"]);
+document.querySelectorAll(".quick-buttons button").forEach(b => {
+  b.onclick = () => {
+    clearAllSuccess();
+    set("distanceKm", b.dataset.km);
+    set("distanceM", b.dataset.m);
+    highlight(["distanceKm", "distanceM"]);
+    msg("Distancia actualizada");
   };
 });
 
-document.getElementById("clearAll").onclick=()=>{
-  document.querySelectorAll("input").forEach(i=>i.value="");
+document.querySelectorAll("input").forEach(input => {
+  input.addEventListener("input", handleManualEdit);
+});
+
+document.getElementById("clearAll").onclick = () => {
+  document.querySelectorAll("input").forEach(i => {
+    i.value = "";
+    i.classList.remove("success");
+    i.classList.remove("highlight");
+  });
+  currentSuccessFields = [];
   msg("Todo borrado");
 };
-
 </script>
 </body>
 </html>
